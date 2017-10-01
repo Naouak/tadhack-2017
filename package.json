@@ -1,0 +1,9 @@
+{
+  "dependencies": {
+    "babel-runtime": "^6.26.0",
+    "express": "^4.16.1",
+    "matrix-js-sdk": "^0.8.4",
+    "moment": "^2.18.1",
+    "olm": "https://matrix.org/packages/npm/olm/olm-2.2.2.tgz"
+  }
+}

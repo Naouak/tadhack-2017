@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>The button</title>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/css/bootstrap.min.css" integrity="sha384-/Y6pD6FV/Vv2HJnA6t+vslU6fwYXjCFtcEpHbNJ0lyAFsXTsjBbfaDjzALeQsN6M" crossorigin="anonymous">
+</head>
+<body>
+<div id="app" class="container-fluid">
+  <div class="row">
+    <div class="col-sm-8">
+      <div class="input-group">
+        <span class="input-group-addon" id="basic-addon1">Button operator</span>
+        <input class="form-control" style="width: 100%;" placeholder="Your name" type="text" name="clicker" id="name" v-model="username">
+      </div>
+
+      <div>
+        <h2>DO NOT push this button</h2>
+        <button class="btn btn-danger btn-lg btn-block" :disabled="!buttonVisible" style="font-size: 100px;" v-on:click="clickButton">
+          Push button
+        </button>
+      </div>
+
+      <h1>The button has not been pushed since <span class="text-danger">{{counter}}</span> seconds</h1>
+      <h1>It was last pushed by <span class="text-primary">{{clickedBy}}</span>.</h1>
+    </div>
+
+    <div class="col-sm-4">
+      <div class="card" style="width: 20rem;">
+        <div class="card-body">
+          <h4 class="card-title">Scores</h4>
+        </div>
+        <ul class="list-group list-group-flush">
+          <li class="list-group-item"  v-for="(score, user) in scores">{{user}} : {{score}}</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://unpkg.com/vue"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.18.1/moment.js"></script>
+<script type="text/javascript" language="JavaScript">
+  const store = {
+		clickedBy: '',
+		clickedAt: moment(),
+    scores: {},
+    username: '',
+	};
+	const app = new Vue({
+		el: '#app',
+		data: store,
+    computed: {
+			buttonVisible: function(){
+				return this.username.length > 3 && this.clickedBy !== this.username+'@web';
+      },
+      counter: function(){
+				return moment().unix() - this.clickedAt.unix()
+      }
+    },
+    methods: {
+			clickButton: function(){
+				if(!this.buttonVisible){
+					return;
+        }
+				const username = this.username;
+				fetch('/push_button?clicker='+username);
+      }
+    }
+	});
+
+	setInterval(function(){
+		fetch('/status')
+			.then(response => response.json())
+			.then((data) => {
+				store.clickedAt = moment(data.clickedAt || data.lastClick);
+				store.clickedBy = data.clickedBy || data.lastClicker;
+			}).catch((err) => {
+			console.log(err);
+		});
+
+		fetch('/scores')
+			.then(response => response.json())
+			.then((data) => {
+				store.scores = data;
+			}).catch((err) => {
+			console.log(err);
+		});
+  }, 1000);
+
+</script>
+
+</body>
+</html>
